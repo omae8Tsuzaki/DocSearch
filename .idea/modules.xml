@@ -2,7 +2,16 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/DocSearch.iml" filepath="$PROJECT_DIR$/DocSearch.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/DocSearch.iml" filepath="$PROJECT_DIR$/.idea/modules/DocSearch.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/DocSearch.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/DocSearch.app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/DocSearch.app.main.iml" filepath="$PROJECT_DIR$/.idea/modules/app/DocSearch.app.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/DocSearch.app.test.iml" filepath="$PROJECT_DIR$/.idea/modules/app/DocSearch.app.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/core/DocSearch.core.iml" filepath="$PROJECT_DIR$/.idea/modules/core/DocSearch.core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/core/DocSearch.core.main.iml" filepath="$PROJECT_DIR$/.idea/modules/core/DocSearch.core.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/core/DocSearch.core.test.iml" filepath="$PROJECT_DIR$/.idea/modules/core/DocSearch.core.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/domain/DocSearch.domain.iml" filepath="$PROJECT_DIR$/.idea/modules/domain/DocSearch.domain.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/domain/DocSearch.domain.main.iml" filepath="$PROJECT_DIR$/.idea/modules/domain/DocSearch.domain.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/domain/DocSearch.domain.test.iml" filepath="$PROJECT_DIR$/.idea/modules/domain/DocSearch.domain.test.iml" />
     </modules>
   </component>
 </project>
