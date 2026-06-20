@@ -10,4 +10,11 @@
       <module name="domain.test" target="21" />
     </bytecodeTargetLevel>
   </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="DocSearch.app" options="-parameters" />
+      <module name="DocSearch.app.main" options="-parameters" />
+      <module name="DocSearch.app.test" options="-parameters" />
+    </option>
+  </component>
 </project>

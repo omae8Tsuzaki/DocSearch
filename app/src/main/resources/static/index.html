@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DocSearch</title>
+    <style>
+        :root { --border: #d1d5db; --muted: #6b7280; --accent: #2563eb; --bg: #f9fafb; }
+        * { box-sizing: border-box; }
+        body {
+            font-family: "Segoe UI", "Yu Gothic UI", sans-serif;
+            max-width: 880px; margin: 32px auto; padding: 0 16px; color: #1f2933;
+        }
+        h1 { font-size: 1.5rem; margin-bottom: 4px; }
+        h2 { font-size: 1.05rem; margin: 0 0 8px; }
+        .muted { color: var(--muted); font-size: 0.9rem; }
+        section { border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-top: 16px; }
+        button {
+            font: inherit; padding: 6px 12px; border: 1px solid var(--border);
+            border-radius: 6px; background: #fff; cursor: pointer;
+        }
+        button:hover { background: var(--bg); }
+        button:disabled { opacity: 0.5; cursor: default; }
+        button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+        button.primary:hover { filter: brightness(1.05); }
+        .folder-list { list-style: none; padding: 0; margin: 0 0 10px; }
+        .folder-list li {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; margin-bottom: 6px;
+        }
+        .folder-list code { font-size: 0.9rem; word-break: break-all; }
+        .row { display: flex; gap: 8px; align-items: center; }
+        .search-row input[type=text] {
+            flex: 1; font: inherit; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px;
+        }
+        .index-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+        .hint { color: var(--muted); font-size: 0.85rem; margin: 8px 0 0; }
+        .badge { display:inline-block; background:#eef2ff; color:#3730a3; border-radius: 10px; padding: 1px 8px; font-size: 0.8rem; }
+        .dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:#9ca3af; margin-right:6px; }
+        .dot.busy { background:#f59e0b; animation: pulse 1s infinite; }
+        .dot.ready { background:#16a34a; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+        .results { list-style: none; padding: 0; margin: 12px 0 0; }
+        .results li { padding: 12px 0; border-bottom: 1px solid var(--border); }
+        .results .name { font-weight: 600; word-break: break-all; }
+        .results .snippet { margin: 4px 0; color: #374151; font-size: 0.9rem; line-height: 1.5; }
+        .results .snippet mark { background: #fde68a; padding: 0 1px; }
+        .results .meta { color: var(--muted); font-size: 0.82rem; word-break: break-all; }
+
+        /* modal */
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: none; align-items: center; justify-content: center; }
+        .overlay.open { display: flex; }
+        .modal { background: #fff; width: min(640px, 92vw); max-height: 80vh; border-radius: 10px; display: flex; flex-direction: column; overflow: hidden; }
+        .modal header { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+        .modal .current { font-size: 0.85rem; color: var(--muted); word-break: break-all; }
+        .modal .body { overflow: auto; padding: 8px 16px; flex: 1; }
+        .modal footer { padding: 12px 16px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; gap: 8px; }
+        .dir-list { list-style: none; padding: 0; margin: 0; }
+        .dir-list li { padding: 8px 6px; border-radius: 6px; cursor: pointer; }
+        .dir-list li:hover { background: var(--bg); }
+        .empty { color: var(--muted); padding: 12px 6px; }
+    </style>
+</head>
+<body>
+    <h1>DocSearch</h1>
+    <p class="muted">ローカルPCのフォルダを横断して全文検索します（md / pptx / xlsx / docx / pdf など）。</p>
+
+    <section>
+        <h2>検索対象フォルダ</h2>
+        <ul id="folderList" class="folder-list"></ul>
+        <p id="noFolders" class="hint" hidden>まだ対象フォルダがありません。「フォルダを追加」から選択してください。</p>
+        <button id="addFolderBtn">+ フォルダを追加</button>
+    </section>
+
+    <section>
+        <h2>索引（インデックス）</h2>
+        <div class="index-bar">
+            <div id="indexStatus" class="muted"><span class="dot"></span>状態を確認中…</div>
+            <button id="reindexBtn" class="primary">再索引</button>
+        </div>
+        <p class="hint">フォルダを追加・変更したら再索引してください。更新のないファイルはスキップされます。</p>
+    </section>
+
+    <section>
+        <h2>検索</h2>
+        <div class="row search-row">
+            <input id="searchInput" type="text" placeholder="キーワードを入力（本文・ファイル名を検索）" autocomplete="off">
+            <button id="searchBtn" class="primary">検索</button>
+        </div>
+        <p id="searchStatus" class="hint"></p>
+        <ul id="results" class="results"></ul>
+    </section>
+
+    <!-- ディレクトリブラウザ -->
+    <div id="overlay" class="overlay">
+        <div class="modal">
+            <header>
+                <strong>フォルダを選択</strong>
+                <div id="modalCurrent" class="current">ドライブを選択してください</div>
+            </header>
+            <div class="body">
+                <ul id="dirList" class="dir-list"></ul>
+            </div>
+            <footer>
+                <button id="upBtn">↑ 上へ</button>
+                <span style="flex:1"></span>
+                <button id="cancelBtn">キャンセル</button>
+                <button id="selectBtn" class="primary" disabled>このフォルダを追加</button>
+            </footer>
+        </div>
+    </div>
+
+    <script>
+        const $ = (id) => document.getElementById(id);
+        let folders = [];
+        let browseCurrent = "";
+        let browseParent = "";
+        let statusTimer = null;
+
+        // ---- 設定（対象フォルダ） ----
+        async function loadFolders() {
+            const data = await (await fetch("/api/settings")).json();
+            folders = data.folders || [];
+            renderFolders();
+        }
+        async function saveFolders() {
+            const res = await fetch("/api/settings", {
+                method: "PUT", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ folders })
+            });
+            folders = (await res.json()).folders || [];
+            renderFolders();
+        }
+        function renderFolders() {
+            const list = $("folderList");
+            list.innerHTML = "";
+            $("noFolders").hidden = folders.length > 0;
+            folders.forEach((path, i) => {
+                const li = document.createElement("li");
+                const code = document.createElement("code");
+                code.textContent = path;
+                const btn = document.createElement("button");
+                btn.textContent = "削除";
+                btn.onclick = () => { folders.splice(i, 1); saveFolders(); };
+                li.append(code, btn);
+                list.appendChild(li);
+            });
+        }
+
+        // ---- 索引状態 ----
+        async function loadStatus() {
+            try {
+                const s = await (await fetch("/api/index/status")).json();
+                renderStatus(s);
+                if (s.indexing) {
+                    if (!statusTimer) statusTimer = setInterval(loadStatus, 1500);
+                    $("reindexBtn").disabled = true;
+                } else {
+                    if (statusTimer) { clearInterval(statusTimer); statusTimer = null; }
+                    $("reindexBtn").disabled = false;
+                }
+            } catch { /* ignore */ }
+        }
+        function renderStatus(s) {
+            const el = $("indexStatus");
+            if (s.indexing) {
+                el.innerHTML = `<span class="dot busy"></span>索引作成中…（${s.docCount} 件）`;
+                return;
+            }
+            const last = s.lastIndexedEpochMs ? "最終索引 " + fmtDate(s.lastIndexedEpochMs) : "未索引";
+            el.innerHTML = `<span class="dot ready"></span>索引済み ${s.docCount} 件 ・ ${last}`;
+        }
+        async function reindex() {
+            const res = await fetch("/api/index/reindex", { method: "POST" });
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                alert(err.error || "再索引を開始できませんでした");
+                return;
+            }
+            loadStatus();
+        }
+
+        // ---- ディレクトリブラウザ ----
+        async function browse(path) {
+            const url = path ? `/api/browse?path=${encodeURIComponent(path)}` : "/api/browse";
+            const res = await fetch(url);
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                alert(err.error || "フォルダを開けませんでした");
+                return;
+            }
+            const data = await res.json();
+            browseCurrent = data.current || "";
+            browseParent = data.parent || "";
+            $("modalCurrent").textContent = browseCurrent || "ドライブを選択してください";
+            $("selectBtn").disabled = !browseCurrent;
+            $("upBtn").disabled = !browseCurrent;
+
+            const dirList = $("dirList");
+            dirList.innerHTML = "";
+            const entries = data.entries || [];
+            if (entries.length === 0) {
+                const li = document.createElement("li");
+                li.className = "empty";
+                li.textContent = "（サブフォルダはありません）";
+                dirList.appendChild(li);
+            }
+            entries.forEach((entry) => {
+                const li = document.createElement("li");
+                li.textContent = "📁 " + entry.name;
+                li.onclick = () => browse(entry.path);
+                dirList.appendChild(li);
+            });
+        }
+        function openModal() { $("overlay").classList.add("open"); browse(""); }
+        function closeModal() { $("overlay").classList.remove("open"); }
+
+        // ---- 検索 ----
+        async function runSearch() {
+            const q = $("searchInput").value.trim();
+            if (!q) { $("searchStatus").textContent = "検索語を入力してください。"; $("results").innerHTML = ""; return; }
+            $("searchStatus").textContent = "検索中…";
+            const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                $("searchStatus").textContent = err.error || "検索に失敗しました";
+                return;
+            }
+            renderResults(await res.json());
+        }
+        function renderResults(data) {
+            const hits = data.hits || [];
+            let status = `${data.total} 件ヒット`;
+            if (data.total >= data.limit) status += `（上限 ${data.limit} 件で打ち切り）`;
+            $("searchStatus").innerHTML = `<span class="badge">${status}</span>`;
+            const list = $("results");
+            list.innerHTML = "";
+            if (hits.length === 0) {
+                if (data.total === 0) $("searchStatus").innerHTML += " — 該当なし（索引が空の場合は先に再索引してください）";
+                return;
+            }
+            hits.forEach((h) => {
+                const li = document.createElement("li");
+                const name = document.createElement("div");
+                name.className = "name";
+                name.textContent = h.fileName;
+                const snippet = document.createElement("div");
+                snippet.className = "snippet";
+                snippet.innerHTML = h.snippet || "";   // サーバ側でエスケープ済み（<mark> のみ）
+                const meta = document.createElement("div");
+                meta.className = "meta";
+                meta.textContent = `${h.parentPath} ・ ${fmtSize(h.sizeBytes)} ・ ${fmtDate(h.lastModifiedEpochMs)}`;
+                li.append(name, snippet, meta);
+                list.appendChild(li);
+            });
+        }
+
+        // ---- ユーティリティ ----
+        function fmtSize(bytes) {
+            if (bytes < 1024) return bytes + " B";
+            const units = ["KB", "MB", "GB", "TB"];
+            let v = bytes / 1024, i = 0;
+            while (v >= 1024 && i < units.length - 1) { v /= 1024; i++; }
+            return v.toFixed(1) + " " + units[i];
+        }
+        function fmtDate(ms) {
+            if (!ms) return "-";
+            const d = new Date(ms);
+            const p = (n) => String(n).padStart(2, "0");
+            return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+        }
+
+        // ---- イベント ----
+        $("addFolderBtn").onclick = openModal;
+        $("cancelBtn").onclick = closeModal;
+        $("upBtn").onclick = () => browse(browseParent);
+        $("selectBtn").onclick = () => {
+            if (browseCurrent && !folders.includes(browseCurrent)) { folders.push(browseCurrent); saveFolders(); }
+            closeModal();
+        };
+        $("overlay").onclick = (e) => { if (e.target === $("overlay")) closeModal(); };
+        $("reindexBtn").onclick = reindex;
+        $("searchBtn").onclick = runSearch;
+        $("searchInput").addEventListener("keydown", (e) => { if (e.key === "Enter") runSearch(); });
+
+        loadFolders();
+        loadStatus();
+    </script>
+</body>
+</html>

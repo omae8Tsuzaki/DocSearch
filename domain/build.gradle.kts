@@ -2,8 +2,14 @@ plugins {
     id("java")
 }
 
-group = "org.example"
+group = "com.example.docsearch"
 version = "1.0-SNAPSHOT"
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
 
 repositories {
     mavenCentral()
@@ -11,6 +17,22 @@ repositories {
 
 dependencies {
     implementation(project(":core"))
+
+    // Spring（DI/ライフサイクル）。バージョンは Spring Boot BOM で管理
+    implementation(platform(libs.spring.boot.dependencies))
+    implementation(libs.spring.context)
+    implementation(libs.slf4j.api)
+
+    // Lucene（全文検索）
+    implementation(libs.lucene.core)
+    implementation(libs.lucene.analysis.common)
+    implementation(libs.lucene.analysis.kuromoji)
+    implementation(libs.lucene.queryparser)
+    implementation(libs.lucene.highlighter)
+
+    // Tika（本文抽出: pptx/xlsx/docx/pdf/md など）
+    implementation(libs.tika.core)
+    implementation(libs.tika.parsers.standard)
 }
 
 tasks.test {

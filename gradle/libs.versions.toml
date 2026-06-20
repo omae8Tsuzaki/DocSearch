@@ -1,12 +1,35 @@
 [versions]
 # Spring Boot
 spring-boot-version = "4.1.0"
+# Spring dependency management plugin
+spring-dependency-management-version = "1.1.7"
+# Lucene（全文検索エンジン）
+lucene-version = "10.1.0"
+# Tika（本文抽出）
+tika-version = "3.3.1"
 # JUnit
 junit-bom-version = "6.0.0"
 
 [libraries]
 # Spring Boot
 spring-boot-starter-web      = { group = "org.springframework.boot", name = "spring-boot-starter-web",      version.ref = "spring-boot-version" }
+spring-boot-starter-test     = { group = "org.springframework.boot", name = "spring-boot-starter-test",     version.ref = "spring-boot-version" }
+spring-boot-dependencies     = { group = "org.springframework.boot", name = "spring-boot-dependencies",     version.ref = "spring-boot-version" }
+
+# Spring（domain 用。バージョンは spring-boot-dependencies BOM で管理）
+spring-context = { group = "org.springframework", name = "spring-context" }
+slf4j-api      = { group = "org.slf4j", name = "slf4j-api" }
+
+# Lucene
+lucene-core             = { group = "org.apache.lucene", name = "lucene-core",             version.ref = "lucene-version" }
+lucene-analysis-common  = { group = "org.apache.lucene", name = "lucene-analysis-common",  version.ref = "lucene-version" }
+lucene-analysis-kuromoji = { group = "org.apache.lucene", name = "lucene-analysis-kuromoji", version.ref = "lucene-version" }
+lucene-queryparser      = { group = "org.apache.lucene", name = "lucene-queryparser",      version.ref = "lucene-version" }
+lucene-highlighter      = { group = "org.apache.lucene", name = "lucene-highlighter",      version.ref = "lucene-version" }
+
+# Tika
+tika-core                     = { group = "org.apache.tika", name = "tika-core",                     version.ref = "tika-version" }
+tika-parsers-standard = { group = "org.apache.tika", name = "tika-parsers-standard-package", version.ref = "tika-version" }
 
 # junit
 junit-bom = { group = "org.junit", name = "junit-bom", version.ref = "junit-bom-version" }
@@ -14,4 +37,7 @@ junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter" }
 junit-platform-launcher = { group = "org.junit.platform", name = "junit-platform-launcher"}
 
 [bundles]
+
 [plugins]
+spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot-version" }
+spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "spring-dependency-management-version" }
