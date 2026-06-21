@@ -1,0 +1,53 @@
+name: Codex Assistant
+# 参考サイト https://iret.media/183023
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  codex_review:
+    if: github.event.pull_request.user.login == 'omae8Tsuzaki'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Codex PR Review
+        id: run_codex
+        uses: openai/codex-action@v1
+        with:
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          model: gpt-5.4-mini
+          prompt: |
+            あなたはシニアエンジニアです。
+            PR #${{ github.event.pull_request.number }} をレビューしてください。
+            対象差分:
+            git diff ${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }}
+
+            以下の順で、日本語で簡潔に出してください。
+            
+            1. 重大（必ず直す）：バグ、例外、セキュリティ、破壊的変更、データ不整合
+            2. 改善（推奨）：可読性、設計、命名、責務、パフォーマンス
+            
+            各指摘には、必ず「ファイル名」と「該当する行番号（diff上）」を明記してください。
+
+      - name: Post Codex feedback to PR
+        if: steps.run_codex.outputs.final-message != ''
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body: process.env.CODEX_FINAL_MESSAGE,
+            })
+        env:
+          CODEX_FINAL_MESSAGE: ${{ steps.run_codex.outputs.final-message }}
