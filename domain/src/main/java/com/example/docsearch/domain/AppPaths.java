@@ -24,12 +24,24 @@ public final class AppPaths {
     }
 
     /**
-     * 任意の保存先を指定する（主にテスト用）。
+     * <p>任意の保存先を指定する（主にテスト用）。</p>
      *
      * @param baseDir 基準ディレクトリ
      */
     public AppPaths(Path baseDir) {
         this.baseDir = baseDir;
+    }
+
+    /**
+     * 既定の基準ディレクトリを解決して返す（ディレクトリ作成は行わない）。
+     *
+     * <p>ログ出力先など、Spring の DI が利用できない起動初期段階で
+     * 同じ保存先を参照したい場合に用いる。</p>
+     *
+     * @return 既定の基準ディレクトリ
+     */
+    public static Path defaultBaseDir() {
+        return resolveDefaultBaseDir();
     }
 
     private static Path resolveDefaultBaseDir() {
@@ -41,7 +53,7 @@ public final class AppPaths {
     }
 
     /**
-     * 基準ディレクトリを返す（存在しなければ作成する）。
+     * <p>基準ディレクトリを返す（存在しなければ作成する）。</p>
      *
      * @return 基準ディレクトリ
      */
@@ -50,7 +62,7 @@ public final class AppPaths {
     }
 
     /**
-     * 検索対象フォルダ設定ファイルのパスを返す。
+     * <p>検索対象フォルダ設定ファイルのパスを返す。</p>
      *
      * @return {@code folders.txt} の絶対パス
      */
@@ -59,7 +71,7 @@ public final class AppPaths {
     }
 
     /**
-     * Lucene 索引を格納するディレクトリを返す（存在しなければ作成する）。
+     * <p>Lucene 索引を格納するディレクトリを返す（存在しなければ作成する）。</p>
      *
      * @return 索引ディレクトリ
      */
@@ -68,7 +80,7 @@ public final class AppPaths {
     }
 
     /**
-     * 最終索引時刻を記録するメタファイルのパスを返す。
+     * <p>最終索引時刻を記録するメタファイルのパスを返す。</p>
      *
      * @return {@code index.meta} の絶対パス
      */

@@ -25,7 +25,7 @@ import com.example.docsearch.domain.model.DirectoryEntry;
 public class DirectoryBrowser {
 
     /**
-     * ルート（Windows のドライブ等）の一覧を返す。
+     * <p>ルート（Windows のドライブ等）の一覧を返す。</p>
      *
      * @return ルートエントリの一覧
      */
@@ -39,7 +39,7 @@ public class DirectoryBrowser {
     }
 
     /**
-     * 指定パス直下のサブディレクトリ一覧を返す（隠し/アクセス不可は除外）。
+     * <p>指定パス直下のサブディレクトリ一覧を返す（隠し/アクセス不可は除外）。</p>
      *
      * @param pathStr 対象ディレクトリの絶対パス
      * @return サブディレクトリの一覧（名前昇順）
@@ -72,7 +72,7 @@ public class DirectoryBrowser {
     }
 
     /**
-     * 親ディレクトリのパスを返す。ルート直下（親なし）なら {@code null}。
+     * <p>親ディレクトリのパスを返す。ルート直下（親なし）なら {@code null}。</p>
      *
      * @param pathStr 対象パス
      * @return 親ディレクトリの絶対パス、なければ null

@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class TextExtractor {
 
-    private static final Logger log = LoggerFactory.getLogger(TextExtractor.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(TextExtractor.class);
 
     /** 抽出する本文の最大文字数（索引肥大化と処理時間の抑制）。 */
     private static final int MAX_CHARS = 200_000;
@@ -32,7 +32,7 @@ public class TextExtractor {
     }
 
     /**
-     * 本文テキストを抽出する。
+     * <p>本文テキストを抽出する。</p>
      *
      * @param file      対象ファイル
      * @param sizeBytes ファイルサイズ
@@ -47,7 +47,7 @@ public class TextExtractor {
             return text == null ? "" : text;
         } catch (Exception e) {
             // 破損ファイルや未対応形式などはスキップ（本文なしで索引化を続行）
-            log.debug("本文抽出に失敗（スキップ）: {} ({})", file, e.toString());
+            LOGGER.debug("本文抽出に失敗（スキップ）: {} ({})", file, e.toString());
             return "";
         }
     }

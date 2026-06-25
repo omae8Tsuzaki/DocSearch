@@ -56,7 +56,7 @@ public class FullTextSearchService {
     }
 
     /**
-     * 既定の上限件数で全文検索する。
+     * <p>既定の上限件数で全文検索する。</p>
      *
      * @param query 検索語
      * @return ヒット一覧（スコア降順）
@@ -66,7 +66,7 @@ public class FullTextSearchService {
     }
 
     /**
-     * 上限件数を指定して全文検索する。
+     * <p>上限件数を指定して全文検索する。</p>
      *
      * @param query 検索語
      * @param limit 返す最大件数
@@ -145,7 +145,9 @@ public class FullTextSearchService {
         return escapeHtml(head);
     }
 
-    /** マーカーを保持したまま HTML エスケープし、最後に {@code <mark>} へ置換する。 */
+    /**
+     * <p>マーカーを保持したまま HTML エスケープし、最後に {@code <mark>} へ置換する。</p>
+     */
     private String decorate(String fragment) {
         return escapeHtml(fragment)
                 .replace(HL_PRE, "<mark>")

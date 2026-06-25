@@ -24,6 +24,12 @@ public class SearchController {
         this.searchService = searchService;
     }
 
+    /**
+     * <p>クエリ文字列を受け取り、検索してヒットしたドキュメントのリストを返す。</p>
+     *
+     * @param query 検索クエリ
+     * @return 検索結果
+     */
     @GetMapping
     public Map<String, Object> search(@RequestParam("q") String query) {
         List<SearchHit> hits = searchService.search(query);

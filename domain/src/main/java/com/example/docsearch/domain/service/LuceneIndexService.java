@@ -56,7 +56,7 @@ import com.example.docsearch.domain.model.IndexStatus;
 @Service
 public class LuceneIndexService implements DisposableBean {
 
-    private static final Logger log = LoggerFactory.getLogger(LuceneIndexService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(LuceneIndexService.class);
 
     private final AppPaths appPaths;
     private final TextExtractor extractor;
@@ -75,7 +75,7 @@ public class LuceneIndexService implements DisposableBean {
     }
 
     /**
-     * 再索引をバックグラウンドで開始する。
+     * <p>再索引をバックグラウンドで開始する。</p>
      *
      * @param folders 検索対象フォルダ
      * @return 開始できたら true。既に実行中なら false。
@@ -88,10 +88,10 @@ public class LuceneIndexService implements DisposableBean {
             try {
                 IndexResult result = doReindex(folders);
                 writeLastIndexed(System.currentTimeMillis());
-                log.info("索引完了 indexed={} skipped={} removed={} failed={} {}ms",
+                LOGGER.info("索引完了 indexed={} skipped={} removed={} failed={} {}ms",
                         result.indexed(), result.skipped(), result.removed(), result.failed(), result.elapsedMs());
             } catch (Exception e) {
-                log.error("索引作成に失敗しました", e);
+                LOGGER.error("索引作成に失敗しました", e);
             } finally {
                 indexing.set(false);
             }
@@ -100,7 +100,7 @@ public class LuceneIndexService implements DisposableBean {
     }
 
     /**
-     * 索引の現在状態を返す。
+     * <p>索引の現在状態を返す。</p>
      *
      * @return 索引状態
      */
@@ -165,7 +165,7 @@ public class LuceneIndexService implements DisposableBean {
                     counts[0]++;
                 } catch (IOException e) {
                     counts[2]++;
-                    log.debug("索引化に失敗（スキップ）: {}", file, e);
+                    LOGGER.debug("索引化に失敗（スキップ）: {}", file, e);
                 }
                 return FileVisitResult.CONTINUE;
             }
