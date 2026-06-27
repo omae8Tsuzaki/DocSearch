@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
  */
 public final class BrowserOpener {
 
+    // ログ出力の設定
     private static final Logger LOGGER = LoggerFactory.getLogger(BrowserOpener.class);
 
     private BrowserOpener() {

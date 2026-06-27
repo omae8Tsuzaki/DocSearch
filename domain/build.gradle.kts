@@ -33,6 +33,11 @@ dependencies {
     // Tika（本文抽出: pptx/xlsx/docx/pdf/md など）
     implementation(libs.tika.core)
     implementation(libs.tika.parsers.standard)
+
+    // Test
+    testImplementation(platform(libs.junit.bom))
+    testImplementation(libs.junit.jupiter)
+    testRuntimeOnly(libs.junit.platform.launcher)
 }
 
 tasks.test {

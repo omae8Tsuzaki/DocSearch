@@ -41,7 +41,7 @@ tasks.test {
 //      配布先の利用者には WiX は不要。
 // =====================================================================
 val distAppName = "DocSearch"
-val distAppVersion = "1.0.0" // jpackage は数値形式（major.minor.patch）が必要
+val distAppVersion = providers.gradleProperty("appVersion").get() // jpackage は数値形式（major.minor.patch）が必要
 val distVendor = "com.example"
 // 上書き更新を識別するための固定UUID。一度決めたら以後は絶対に変更しないこと。
 val distUpgradeUuid = "d9830b14-acc5-47b6-a6be-3d836478a35c"

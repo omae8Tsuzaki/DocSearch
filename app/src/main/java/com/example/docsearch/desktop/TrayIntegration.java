@@ -34,6 +34,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class TrayIntegration implements ApplicationListener<ApplicationReadyEvent> {
 
+    // ログ出力の設定
     private static final Logger LOGGER = LoggerFactory.getLogger(TrayIntegration.class);
 
     @Value("${server.port:8080}")

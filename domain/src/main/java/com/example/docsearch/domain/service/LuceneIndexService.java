@@ -56,6 +56,7 @@ import com.example.docsearch.domain.model.IndexStatus;
 @Service
 public class LuceneIndexService implements DisposableBean {
 
+    // ログ出力の設定
     private static final Logger LOGGER = LoggerFactory.getLogger(LuceneIndexService.class);
 
     private final AppPaths appPaths;

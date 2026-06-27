@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class TextExtractor {
 
+    // ログ出力の設定
     private static final Logger LOGGER = LoggerFactory.getLogger(TextExtractor.class);
 
     /** 抽出する本文の最大文字数（索引肥大化と処理時間の抑制）。 */

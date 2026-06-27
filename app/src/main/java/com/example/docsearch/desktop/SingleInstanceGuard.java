@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
  */
 public final class SingleInstanceGuard implements AutoCloseable {
 
+    // ログ出力の設定
     private static final Logger LOGGER = LoggerFactory.getLogger(SingleInstanceGuard.class);
 
     /** 単一インスタンス判定に用いるループバック専用ポート（アプリ本体の 8080 とは別）。 */
