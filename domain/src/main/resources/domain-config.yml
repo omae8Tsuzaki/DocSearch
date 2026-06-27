@@ -1,0 +1,3 @@
+docSearch:
+  search:
+    maxLimit: 200 # 1回の検索で返す最大件数

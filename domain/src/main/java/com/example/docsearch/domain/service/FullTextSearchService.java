@@ -5,7 +5,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.example.docsearch.core.util.HtmlEscaper;
+import com.example.docsearch.core.util.StringUtils;
 import com.example.docsearch.domain.AppPaths;
+import com.example.docsearch.domain.DomainConfig;
 import com.example.docsearch.domain.LuceneFields;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.ja.JapaneseAnalyzer;
@@ -38,9 +41,6 @@ import com.example.docsearch.domain.model.SearchHit;
 @Service
 public class FullTextSearchService {
 
-    /** 1回の検索で返す最大件数。 */
-    public static final int DEFAULT_LIMIT = 200;
-
     /** 抜粋の最大長（フォールバック時）。 */
     private static final int SNIPPET_LENGTH = 160;
     // ハイライト用の内部マーカー。通常の文書に出現せず、HTMLエスケープの影響を受けない
@@ -49,10 +49,13 @@ public class FullTextSearchService {
     private static final String HL_POST = "@@DSMARK_CLOSE@@";
 
     private final AppPaths appPaths;
+    // １回の検索で返す最大件数（設定値）
+    private final int maxLimit;
     private final Analyzer analyzer = new JapaneseAnalyzer();
 
-    public FullTextSearchService(AppPaths appPaths) {
+    public FullTextSearchService(AppPaths appPaths, DomainConfig domainConfig) {
         this.appPaths = appPaths;
+        this.maxLimit = domainConfig.getSearchMaxLimit();
     }
 
     /**
@@ -62,7 +65,7 @@ public class FullTextSearchService {
      * @return ヒット一覧（スコア降順）
      */
     public List<SearchHit> search(String query) {
-        return search(query, DEFAULT_LIMIT);
+        return search(query, this.maxLimit);
     }
 
     /**
@@ -105,6 +108,22 @@ public class FullTextSearchService {
         return hits;
     }
 
+    /**
+     * <p>検索の最大件数を取得する。</p>
+     *
+     * @return 最大件数
+     */
+    public int getMaxLimit() {
+        return maxLimit;
+    }
+
+    /**
+     * <p>検索クエリを構築する。</p>
+     *
+     * @param rawQuery 元の検索クエリ
+     * @return 構築されたクエリ
+     * @throws ParseException クエリ解析に失敗した場合
+     */
     private Query buildQuery(String rawQuery) throws ParseException {
         String[] fields = {LuceneFields.CONTENT, LuceneFields.NAME};
         Map<String, Float> boosts = Map.of(
@@ -118,10 +137,10 @@ public class FullTextSearchService {
     }
 
     private SearchHit toHit(Document doc, float score, Highlighter highlighter) {
-        String fileName = nullToEmpty(doc.get(LuceneFields.NAME));
-        String path = nullToEmpty(doc.get(LuceneFields.PATH));
-        String parent = nullToEmpty(doc.get(LuceneFields.PARENT));
-        String extension = nullToEmpty(doc.get(LuceneFields.EXTENSION));
+        String fileName = StringUtils.nullToEmpty(doc.get(LuceneFields.NAME));
+        String path = StringUtils.nullToEmpty(doc.get(LuceneFields.PATH));
+        String parent = StringUtils.nullToEmpty(doc.get(LuceneFields.PARENT));
+        String extension = StringUtils.nullToEmpty(doc.get(LuceneFields.EXTENSION));
         long size = numeric(doc.getField(LuceneFields.SIZE));
         long modified = numeric(doc.getField(LuceneFields.MODIFIED));
         String snippet = makeSnippet(highlighter, doc.get(LuceneFields.CONTENT));
@@ -142,39 +161,19 @@ public class FullTextSearchService {
         }
         String plain = content.strip();
         String head = plain.length() > SNIPPET_LENGTH ? plain.substring(0, SNIPPET_LENGTH) + "…" : plain;
-        return escapeHtml(head);
+        return HtmlEscaper.escapeHtml(head);
     }
 
     /**
      * <p>マーカーを保持したまま HTML エスケープし、最後に {@code <mark>} へ置換する。</p>
      */
     private String decorate(String fragment) {
-        return escapeHtml(fragment)
+        return HtmlEscaper.escapeHtml(fragment)
                 .replace(HL_PRE, "<mark>")
                 .replace(HL_POST, "</mark>");
     }
 
-    private static String escapeHtml(String s) {
-        StringBuilder sb = new StringBuilder(s.length());
-        for (int i = 0; i < s.length(); i++) {
-            char c = s.charAt(i);
-            switch (c) {
-                case '&' -> sb.append("&amp;");
-                case '<' -> sb.append("&lt;");
-                case '>' -> sb.append("&gt;");
-                case '"' -> sb.append("&quot;");
-                case '\'' -> sb.append("&#39;");
-                default -> sb.append(c);
-            }
-        }
-        return sb.toString();
-    }
-
     private static long numeric(IndexableField field) {
         return (field == null || field.numericValue() == null) ? 0L : field.numericValue().longValue();
-    }
-
-    private static String nullToEmpty(String s) {
-        return s == null ? "" : s;
     }
 }

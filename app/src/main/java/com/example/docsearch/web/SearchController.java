@@ -36,7 +36,7 @@ public class SearchController {
         return Map.of(
                 "query", query == null ? "" : query,
                 "total", hits.size(),
-                "limit", FullTextSearchService.DEFAULT_LIMIT,
+                "limit", searchService.getMaxLimit(),
                 "hits", hits
         );
     }
