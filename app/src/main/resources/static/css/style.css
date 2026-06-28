@@ -32,7 +32,13 @@ button.primary:hover { filter: brightness(1.05); }
 .dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:#9ca3af; margin-right:6px; }
 .dot.busy { background:#f59e0b; animation: pulse 1s infinite; }
 .dot.ready { background:#16a34a; }
+.dot.down { background:#dc2626; }
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+.app-header { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.health { font-size:0.85rem; color:var(--muted); }
+.health.up { color:#16a34a; }
+.health.down { color:#dc2626; }
 
 .results { list-style: none; padding: 0; margin: 12px 0 0; }
 .results li { padding: 12px 0; border-bottom: 1px solid var(--border); }

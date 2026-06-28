@@ -29,7 +29,9 @@ lucene-highlighter      = { group = "org.apache.lucene", name = "lucene-highligh
 
 # Tika
 tika-core                     = { group = "org.apache.tika", name = "tika-core",                     version.ref = "tika-version" }
-tika-parsers-standard = { group = "org.apache.tika", name = "tika-parsers-standard-package", version.ref = "tika-version" }
+tika-parser-pdf = { group = "org.apache.tika", name="tika-parser-pdf-module", version.ref = "tika-version" }
+tika-parser-text = { group = "org.apache.tika", name="tika-parser-text-module", version.ref = "tika-version" }
+tika-parser-microsoft = {group = "org.apache.tika", name="tika-parser-microsoft-module", version.ref = "tika-version" }
 
 # junit
 junit-bom = { group = "org.junit", name = "junit-bom", version.ref = "junit-bom-version" }

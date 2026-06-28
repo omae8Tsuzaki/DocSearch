@@ -33,7 +33,9 @@ dependencies {
 
     // Tika（本文抽出: pptx/xlsx/docx/pdf/md など）
     implementation(libs.tika.core)
-    implementation(libs.tika.parsers.standard)
+    implementation(libs.tika.parser.pdf) // pdf
+    implementation(libs.tika.parser.text) // text
+    implementation(libs.tika.parser.microsoft) // microsoft
 
     // Test
     testImplementation(platform(libs.junit.bom))

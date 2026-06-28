@@ -3,6 +3,7 @@ let folders = [];
 let browseCurrent = "";
 let browseParent = "";
 let statusTimer = null;
+let healthTimer = null;
 
 // ---- 設定（対象フォルダ） ----
 async function loadFolders() {
@@ -32,6 +33,33 @@ function renderFolders() {
         li.append(code, btn);
         list.appendChild(li);
     });
+}
+
+// ---- 稼働状態（ヘルスチェック） ----
+async function checkHealth() {
+    try {
+        const res = await fetch("/api/health", { cache: "no-store" });
+        const h = await res.json();
+        if (res.ok && h.status === "UP") {
+            setHealth("up", "ready", `起動中（${h.app}）`);
+            return;
+        }
+        throw new Error("not up");
+    } catch {
+        setHealth("down", "down", "応答なし");
+    }
+}
+function setHealth(state, dot, text) {
+    $("healthStatus").className = "health " + state;
+    $("healthDot").className = "dot " + dot;
+    $("healthText").textContent = text;
+}
+function startHealthPolling() {
+    if (healthTimer) return;            // 二重起動を防ぐ
+    healthTimer = setInterval(checkHealth, 10000);
+}
+function stopHealthPolling() {
+    if (healthTimer) { clearInterval(healthTimer); healthTimer = null; }
 }
 
 // ---- 索引状態 ----
@@ -170,5 +198,19 @@ $("reindexBtn").onclick = reindex;
 $("searchBtn").onclick = runSearch;
 $("searchInput").addEventListener("keydown", (e) => { if (e.key === "Enter") runSearch(); });
 
+// タブが非表示の間はポーリングを止め、表示に戻ったら即時確認して再開する。
+document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+        stopHealthPolling();
+    } else {
+        checkHealth();
+        startHealthPolling();
+    }
+});
+// 離脱時にタイマーを確実に破棄する。
+window.addEventListener("beforeunload", stopHealthPolling);
+
+checkHealth();
+startHealthPolling();
 loadFolders();
 loadStatus();
