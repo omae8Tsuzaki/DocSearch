@@ -3,6 +3,8 @@ package com.example.docsearch.domain;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.Set;
+
 /**
  * <p>設定値を管理するクラス。</p>
  */
@@ -10,10 +12,16 @@ import org.springframework.stereotype.Component;
 public class DomainConfig {
 
     /**
-     * <p>検索結果の最大件数を取得する。</p>
+     * <p>検索結果の最大件数。</p>
      */
     @Value("${docSearch.search.maxLimit}")
     private int searchMaxLimit;
+
+    /**
+     * <p>検索対象のファイルの拡張子。</p>
+     */
+    @Value("${docSearch.search.supportedExtensions}")
+    private Set<String> supportedExtensions;
 
     /**
      * <p>検索結果の最大件数を取得する。</p>
@@ -22,5 +30,14 @@ public class DomainConfig {
      */
     public int getSearchMaxLimit() {
         return searchMaxLimit;
+    }
+
+    /**
+     * <p>検索対象のファイルの拡張子を取得する。</p>
+     *
+     * @return 検索対象のファイルの拡張子
+     */
+    public Set<String> getSupportedExtensions() {
+        return supportedExtensions;
     }
 }

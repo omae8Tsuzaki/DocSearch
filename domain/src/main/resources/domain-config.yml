@@ -1,3 +1,4 @@
 docSearch:
   search:
     maxLimit: 200 # 1回の検索で返す最大件数
+    supportedExtensions: txt,md,log,pdf,doc,docx,xls,xlsx,ppt,pptx,html,htm,xml # 検索対象の拡張子（カンマ区切り）

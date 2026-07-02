@@ -11,14 +11,16 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.example.docsearch.core.util.FileUtils;
 import com.example.docsearch.domain.AppPaths;
+import com.example.docsearch.domain.DomainConfig;
+import com.example.docsearch.domain.FileSupport;
 import com.example.docsearch.domain.LuceneFields;
 import com.example.docsearch.domain.TextExtractor;
 import org.apache.lucene.analysis.Analyzer;
@@ -61,6 +63,7 @@ public class LuceneIndexService implements DisposableBean {
 
     private final AppPaths appPaths;
     private final TextExtractor extractor;
+    private final DomainConfig config;
     private final Analyzer analyzer = new JapaneseAnalyzer();
 
     private final ExecutorService executor = Executors.newSingleThreadExecutor(runnable -> {
@@ -70,9 +73,10 @@ public class LuceneIndexService implements DisposableBean {
     });
     private final AtomicBoolean indexing = new AtomicBoolean(false);
 
-    public LuceneIndexService(AppPaths appPaths, TextExtractor extractor) {
+    public LuceneIndexService(AppPaths appPaths, TextExtractor extractor, DomainConfig config) {
         this.appPaths = appPaths;
         this.extractor = extractor;
+        this.config = config;
     }
 
     /**
@@ -150,6 +154,13 @@ public class LuceneIndexService implements DisposableBean {
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
                 try {
                     String path = file.toAbsolutePath().toString();
+
+                    // 対象外拡張子は索引化しない。
+                    // seen に加えないため、過去に索引済みなら次回の削除処理で除去される。
+                    if (!FileSupport.isSupportedExtension(file, config.getSupportedExtensions())) {
+                        return FileVisitResult.CONTINUE;
+                    }
+
                     seen.add(path);
                     long modified = attrs.lastModifiedTime().toMillis();
 
@@ -188,18 +199,11 @@ public class LuceneIndexService implements DisposableBean {
         doc.add(new StringField(LuceneFields.PATH, path, Field.Store.YES));
         doc.add(new TextField(LuceneFields.NAME, fileName, Field.Store.YES));
         doc.add(new TextField(LuceneFields.CONTENT, content, Field.Store.YES));
-        doc.add(new StringField(LuceneFields.EXTENSION, extensionOf(fileName), Field.Store.YES));
+        doc.add(new StringField(LuceneFields.EXTENSION, FileUtils.getFileExtensions(fileName), Field.Store.YES));
         doc.add(new StoredField(LuceneFields.PARENT, parent == null ? "" : parent.toString()));
         doc.add(new StoredField(LuceneFields.SIZE, size));
         doc.add(new StoredField(LuceneFields.MODIFIED, modified));
         return doc;
-    }
-
-    private static String extensionOf(String fileName) {
-        int dot = fileName.lastIndexOf('.');
-        return (dot > 0 && dot < fileName.length() - 1)
-                ? fileName.substring(dot + 1).toLowerCase(Locale.ROOT)
-                : "";
     }
 
     private Map<String, Long> readExistingModified(FSDirectory dir) throws IOException {

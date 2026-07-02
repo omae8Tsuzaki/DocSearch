@@ -26,10 +26,12 @@ public class TextExtractor {
     private static final long MAX_FILE_BYTES = 50L * 1024 * 1024;
 
     private final Tika tika;
+    private final DomainConfig config;
 
-    public TextExtractor() {
+    public TextExtractor(DomainConfig domainConfig) {
         this.tika = new Tika();
         this.tika.setMaxStringLength(MAX_CHARS);
+        this.config = domainConfig;
     }
 
     /**
@@ -40,6 +42,10 @@ public class TextExtractor {
      * @return 抽出した本文（失敗・スキップ時は空文字）
      */
     public String extract(Path file, long sizeBytes) {
+        if (!FileSupport.isSupportedExtension(file, config.getSupportedExtensions())) {
+            // 対象となる拡張子以外は本文抽出を行わない。
+            return "";
+        }
         if (sizeBytes > MAX_FILE_BYTES) {
             return "";
         }
