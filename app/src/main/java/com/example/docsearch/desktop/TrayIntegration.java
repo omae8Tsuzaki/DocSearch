@@ -37,7 +37,7 @@ public class TrayIntegration implements ApplicationListener<ApplicationReadyEven
     // ログ出力の設定
     private static final Logger LOGGER = LoggerFactory.getLogger(TrayIntegration.class);
 
-    @Value("${server.port:8080}")
+    @Value("${server.port:8421}")
     private int port;
 
     @Value("${docsearch.browser.auto-open:true}")

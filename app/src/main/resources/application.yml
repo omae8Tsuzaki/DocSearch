@@ -6,7 +6,7 @@ spring:
     import: classpath:domain-config.yml
 
 server:
-  port: 8080
+  port: 8421
   # ローカル専用アプリのため、ループバックのみで待ち受ける（同一LANの第三者からのアクセスを防止）
   address: 127.0.0.1
 
