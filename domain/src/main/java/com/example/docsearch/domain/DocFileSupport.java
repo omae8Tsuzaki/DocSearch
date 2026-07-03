@@ -6,11 +6,12 @@ import java.util.Set;
 import com.example.docsearch.core.util.FileUtils;
 
 /**
- * <p>ファイル操作を支援するユーティリティクラス。</p>
+ * <p>DocSearch 固有のファイル操作を支援するユーティリティクラス。</p>
+ * <p>汎用的なファイル操作などは {@link com.example.docsearch.core.util.FileUtils} を利用する。</p>
  */
-public class FileSupport {
+public class DocFileSupport {
 
-    private FileSupport() {
+    private DocFileSupport() {
         // インスタンス化を防ぐためのコンストラクタ
     }
 
@@ -18,16 +19,19 @@ public class FileSupport {
      * <p>本文抽出の対象拡張子かどうかを判定する。</p>
      *
      * @param file 対象ファイル
-     * @param supportedExtension 対象拡張子の集合（小文字）
+     * @param supportedExtensions 対象拡張子の集合（小文字）
      * @return 対象拡張子なら {@code true}、それ以外は {@code false}
      */
-    public static boolean isSupportedExtension(Path file, Set<String> supportedExtension) {
+    public static boolean isSupportedExtension(Path file, Set<String> supportedExtensions) {
         Path name = file.getFileName();
         if (name == null) {
             return false;
         }
+        if (supportedExtensions == null || supportedExtensions.isEmpty()) {
+            return false;
+        }
         // 拡張子なしの場合は空文字が返り、集合に含まれないため false になる。
         String ext = FileUtils.getFileExtensions(name.toString());
-        return supportedExtension.contains(ext);
+        return supportedExtensions.contains(ext);
     }
 }

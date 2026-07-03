@@ -42,7 +42,7 @@ public class TextExtractor {
      * @return 抽出した本文（失敗・スキップ時は空文字）
      */
     public String extract(Path file, long sizeBytes) {
-        if (!FileSupport.isSupportedExtension(file, config.getSupportedExtensions())) {
+        if (!DocFileSupport.isSupportedExtension(file, config.getSupportedExtensions())) {
             // 対象となる拡張子以外は本文抽出を行わない。
             return "";
         }

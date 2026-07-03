@@ -18,10 +18,10 @@ public class FileUtilsTest {
 
     @Test
     @DisplayName("""
-    正常系
-    対象メソッド：[getFileExtensions]
-    テスト観点：[拡張子が返されることを確認する。]
-    """)
+        正常系
+        対象メソッド：[getFileExtensions]
+        テスト観点：拡張子が返されることを確認する。
+        """)
     public void getFileExtensionsSuccess01() throws Exception {
         //
         // 事前準備
@@ -41,10 +41,10 @@ public class FileUtilsTest {
 
     @Test
     @DisplayName("""
-    正常系
-    対象メソッド：[getFileExtensions]
-    テスト観点：[ファイル名以外を入力した場合、空文字を返すことを確認する。]
-    """)
+        正常系
+        対象メソッド：[getFileExtensions]
+        テスト観点：ファイル名以外を入力した場合、空文字を返すことを確認する。
+        """)
     public void getFileExtensionsSuccess02() throws Exception {
         //
         // 事前準備

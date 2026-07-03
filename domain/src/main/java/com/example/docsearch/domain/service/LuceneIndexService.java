@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import com.example.docsearch.core.util.FileUtils;
 import com.example.docsearch.domain.AppPaths;
 import com.example.docsearch.domain.DomainConfig;
-import com.example.docsearch.domain.FileSupport;
+import com.example.docsearch.domain.DocFileSupport;
 import com.example.docsearch.domain.LuceneFields;
 import com.example.docsearch.domain.TextExtractor;
 import org.apache.lucene.analysis.Analyzer;
@@ -157,7 +157,7 @@ public class LuceneIndexService implements DisposableBean {
 
                     // 対象外拡張子は索引化しない。
                     // seen に加えないため、過去に索引済みなら次回の削除処理で除去される。
-                    if (!FileSupport.isSupportedExtension(file, config.getSupportedExtensions())) {
+                    if (!DocFileSupport.isSupportedExtension(file, config.getSupportedExtensions())) {
                         return FileVisitResult.CONTINUE;
                     }
 
