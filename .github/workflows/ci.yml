@@ -1,0 +1,36 @@
+name: CI # ビルド と 単体テスト を実行する。
+
+# どのイベントをトリガーにしてワークフローを実行するかを指定
+# トリガー: `develop` への push、および全ての Pull Request
+on:
+  push:
+    branches: [develop]
+  pull_request:
+
+# GITHUB_TOKEN を最小権限（リポジトリの読み取りのみ）に絞る
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      # Gradle のキャッシュ。これがないと毎回 Gradle 本体と依存ライブラリをインストールするため、ビルドの時間がかかる。
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Check Java version
+        run: java --version
+
+      # 実行権限を付与
+      - name: Grant execute permission for gradle
+        run: chmod +x gradlew
+
+      - name: Run tests
+        run: ./gradlew build
