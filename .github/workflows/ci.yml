@@ -2,10 +2,17 @@ name: CI # ビルド と 単体テスト を実行する。
 
 # どのイベントをトリガーにしてワークフローを実行するかを指定
 # トリガー: `develop` への push、および全ての Pull Request
+# マークダウンファイル もしくは docs ディレクトリ内のファイルの変更によるワークフローは実行しない
 on:
   push:
     branches: [develop]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
   pull_request:
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
 
 # GITHUB_TOKEN を最小権限（リポジトリの読み取りのみ）に絞る
 permissions:
