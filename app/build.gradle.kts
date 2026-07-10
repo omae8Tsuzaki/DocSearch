@@ -11,7 +11,7 @@ version = "1.0-SNAPSHOT"
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(25)
     }
 }
 
@@ -48,7 +48,7 @@ val distUpgradeUuid = "d9830b14-acc5-47b6-a6be-3d836478a35c"
 
 val javaToolchainService = extensions.getByType<JavaToolchainService>()
 val jdkLauncher = javaToolchainService.launcherFor {
-    languageVersion.set(JavaLanguageVersion.of(21))
+    languageVersion.set(JavaLanguageVersion.of(25))
 }
 fun jdkHome() = jdkLauncher.get().metadata.installationPath.asFile
 fun jdkTool(tool: String) = jdkHome().resolve("bin").resolve(tool).absolutePath

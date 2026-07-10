@@ -28,7 +28,7 @@ jobs:
       - uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
-          java-version: '21'
+          java-version: '25'
       # Gradle のキャッシュ。これがないと毎回 Gradle 本体と依存ライブラリをインストールするため、ビルドの時間がかかる。
       - uses: gradle/actions/setup-gradle@v4
 
