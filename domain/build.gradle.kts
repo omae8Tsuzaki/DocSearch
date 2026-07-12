@@ -1,5 +1,6 @@
 plugins {
     id("java")
+    alias(libs.plugins.spotbugs)
 }
 
 group = "com.example.docsearch"
@@ -9,6 +10,10 @@ java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(25)
     }
+}
+
+spotbugs {
+    excludeFilter.set(rootProject.file("gradle/spotbugs-exclude.xml"))
 }
 
 repositories {
@@ -21,6 +26,7 @@ dependencies {
     // Spring（DI/ライフサイクル）。バージョンは Spring Boot BOM で管理
     implementation(platform(libs.spring.boot.dependencies))
     implementation(libs.spring.context)
+    implementation(libs.jakarta.annotation.api)
     implementation(libs.slf4j.api)
     testImplementation(libs.spring.boot.starter.test)
 

@@ -1,5 +1,6 @@
 package com.example.docsearch.domain;
 
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -23,6 +24,11 @@ public class DomainConfig {
     @Value("${docSearch.search.supportedExtensions}")
     private Set<String> supportedExtensions;
 
+    @PostConstruct
+    private void init() {
+        supportedExtensions = Set.copyOf(supportedExtensions);
+    }
+
     /**
      * <p>検索結果の最大件数を取得する。</p>
      *
@@ -38,6 +44,7 @@ public class DomainConfig {
      * @return 検索対象のファイルの拡張子
      */
     public Set<String> getSupportedExtensions() {
+        // SpotBugs の EI（Expose Internal Representation）ルールに関する警告対応。
         return supportedExtensions;
     }
 }

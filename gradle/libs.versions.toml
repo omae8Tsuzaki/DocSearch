@@ -9,6 +9,8 @@ lucene-version = "10.1.0"
 tika-version = "3.3.1"
 # JUnit
 junit-bom-version = "6.0.0"
+# SpotBugs（静的解析）
+spotbugs-plugin-version = "6.5.8"
 
 [libraries]
 # Spring Boot
@@ -19,6 +21,7 @@ spring-boot-dependencies     = { group = "org.springframework.boot", name = "spr
 # Spring（domain 用。バージョンは spring-boot-dependencies BOM で管理）
 spring-context = { group = "org.springframework", name = "spring-context" }
 slf4j-api      = { group = "org.slf4j", name = "slf4j-api" }
+jakarta-annotation-api = { group = "jakarta.annotation", name = "jakarta.annotation-api" }
 
 # Lucene
 lucene-core             = { group = "org.apache.lucene", name = "lucene-core",             version.ref = "lucene-version" }
@@ -43,3 +46,4 @@ junit-platform-launcher = { group = "org.junit.platform", name = "junit-platform
 [plugins]
 spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot-version" }
 spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "spring-dependency-management-version" }
+spotbugs = { id = "com.github.spotbugs", version.ref = "spotbugs-plugin-version" }

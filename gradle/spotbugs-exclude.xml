@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    SpotBugs の既知の誤検知を除外するフィルタ。
+
+    EI_EXPOSE_REP2: Spring の @Component 等が、DI で注入される協調オブジェクト
+    （AppPaths など）をコンストラクタでフィールドに保持するだけで検出される。
+    対象は可変な値オブジェクトではなくシングルトンの協調オブジェクトであり、
+    防御的コピーは意味を持たないため、対象クラスを列挙して除外する。
+    新たに同様のパターンが増えた場合はここにクラスを追記すること。
+-->
+<FindBugsFilter>
+    <Match>
+        <Class name="~com\.example\.docsearch\..*\.(SettingsRepository|FullTextSearchService|LuceneIndexService|IndexController)"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <!--
+        DM_EXIT: TrayIntegration.shutdown() はトレイアプリの「終了」操作から
+        呼ばれる正規の終了経路であり、JVM 全体を終了させることが意図した挙動のため除外する。
+    -->
+    <Match>
+        <Class name="com.example.docsearch.desktop.TrayIntegration"/>
+        <Method name="shutdown"/>
+        <Bug pattern="DM_EXIT"/>
+    </Match>
+</FindBugsFilter>
