@@ -1,5 +1,6 @@
 package com.example.docsearch.web;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -42,15 +43,26 @@ public class SettingsController {
      */
     @PutMapping
     public Map<String, Object> put(@RequestBody FoldersRequest request) {
-        List<String> folders = request == null || request.folders() == null
+        List<String> folders = request == null || request.getFolders() == null
                 ? List.of()
-                : request.folders();
+                : request.getFolders();
         return Map.of("folders", settingsRepository.saveFolders(folders));
     }
 
     /**
      * <p>保存リクエストのボディ。</p>
      */
-    public record FoldersRequest(List<String> folders) {
+    public static class FoldersRequest {
+        private List<String> folders = new ArrayList<>();
+
+        public FoldersRequest(List<String> folders) {
+            if (!folders.isEmpty() && !folders.contains(null)) {
+                this.folders = List.copyOf(folders);
+            }
+        }
+
+        public List<String> getFolders() {
+            return List.copyOf(folders);
+        }
     }
 }

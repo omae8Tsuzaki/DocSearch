@@ -4,6 +4,7 @@ plugins {
     id("java")
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.spring.dependency.management)
+    alias(libs.plugins.spotbugs)
 }
 
 group = "com.example.docsearch"
@@ -13,6 +14,10 @@ java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(25)
     }
+}
+
+spotbugs {
+    excludeFilter.set(rootProject.file("gradle/spotbugs-exclude.xml"))
 }
 
 repositories {

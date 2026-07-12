@@ -38,6 +38,7 @@ public class DomainConfig {
      * @return 検索対象のファイルの拡張子
      */
     public Set<String> getSupportedExtensions() {
-        return supportedExtensions;
+        // SpotBugs の EI（Expose Internal Representation）ルールに関する警告対応。
+        return Set.copyOf(supportedExtensions);
     }
 }
