@@ -41,3 +41,7 @@ jobs:
 
       - name: Run tests
         run: ./gradlew build
+
+      # SpotBugs の実行
+      - name: Execute  SpotBugs
+        run: ./gradlew spotbugsMain
