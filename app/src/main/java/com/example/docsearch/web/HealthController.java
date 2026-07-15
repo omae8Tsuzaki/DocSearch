@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
+ * <p>ヘルスチェック API</p>
  * <p>アプリの稼働確認用エンドポイント。</p>
  *
  * <p>疎通確認に使用する。ブラウザ／クライアントから
