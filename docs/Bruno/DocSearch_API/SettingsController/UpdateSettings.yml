@@ -1,0 +1,23 @@
+info:
+  name: UpdateSettings
+  type: http
+  seq: 2
+
+http:
+  method: PUT
+  url: "{{url}}/api/settings"
+  auth: inherit
+  body:
+    type: json
+    data: |-
+      {
+        "folders": [
+          "C:\\Documents"
+        ]
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
