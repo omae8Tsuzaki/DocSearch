@@ -3,6 +3,12 @@ name: Codex Assistant
 on:
   pull_request:
     types: [opened, synchronize]
+    # 以下のパスに変更があった場合はワークフローを実行しない
+    paths-ignore:
+      - '**.md'
+      - '.agents/**'
+      - '.github/**'
+      - 'docs/**'
 
 permissions:
   contents: read
