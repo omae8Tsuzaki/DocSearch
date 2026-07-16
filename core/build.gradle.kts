@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "com.example.docsearch"
-version = "1.0-SNAPSHOT"
+version = providers.gradleProperty("appVersion").get()
 
 java {
     toolchain {

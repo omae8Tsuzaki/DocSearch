@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "com.example.docsearch"
-version = "1.0-SNAPSHOT"
+version = providers.gradleProperty("appVersion").get()
 
 java {
     toolchain {
@@ -46,7 +46,7 @@ tasks.test {
 //      配布先の利用者には WiX は不要。
 // =====================================================================
 val distAppName = "DocSearch"
-val distAppVersion = providers.gradleProperty("appVersion").get() // jpackage は数値形式（major.minor.patch）が必要
+val distAppVersion = version.toString() // jpackage は数値形式（major.minor.patch）が必要
 val distVendor = "com.example"
 // 上書き更新を識別するための固定UUID。一度決めたら以後は絶対に変更しないこと。
 val distUpgradeUuid = "d9830b14-acc5-47b6-a6be-3d836478a35c"
