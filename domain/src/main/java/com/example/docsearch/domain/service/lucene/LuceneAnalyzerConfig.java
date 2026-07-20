@@ -1,4 +1,4 @@
-package com.example.docsearch.domain;
+package com.example.docsearch.domain.service.lucene;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.ja.JapaneseAnalyzer;

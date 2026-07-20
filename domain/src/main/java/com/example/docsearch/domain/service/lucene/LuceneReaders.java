@@ -1,4 +1,4 @@
-package com.example.docsearch.domain;
+package com.example.docsearch.domain.service.lucene;
 
 import java.io.IOException;
 
