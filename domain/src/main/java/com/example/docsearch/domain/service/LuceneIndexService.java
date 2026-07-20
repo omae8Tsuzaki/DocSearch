@@ -23,8 +23,8 @@ import com.example.docsearch.domain.DomainConfig;
 import com.example.docsearch.domain.DocFileSupport;
 import com.example.docsearch.domain.LuceneFields;
 import com.example.docsearch.domain.TextExtractor;
+import com.example.docsearch.domain.LuceneReaders;
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.ja.JapaneseAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StoredField;
@@ -64,7 +64,7 @@ public class LuceneIndexService implements DisposableBean {
     private final AppPaths appPaths;
     private final TextExtractor extractor;
     private final DomainConfig config;
-    private final Analyzer analyzer = new JapaneseAnalyzer();
+    private final Analyzer analyzer;
 
     private final ExecutorService executor = Executors.newSingleThreadExecutor(runnable -> {
         Thread thread = new Thread(runnable, "docsearch-indexer");
@@ -73,10 +73,11 @@ public class LuceneIndexService implements DisposableBean {
     });
     private final AtomicBoolean indexing = new AtomicBoolean(false);
 
-    public LuceneIndexService(AppPaths appPaths, TextExtractor extractor, DomainConfig config) {
+    public LuceneIndexService(AppPaths appPaths, TextExtractor extractor, DomainConfig config, Analyzer analyzer) {
         this.appPaths = appPaths;
         this.extractor = extractor;
         this.config = config;
+        this.analyzer = analyzer;
     }
 
     /**
@@ -207,23 +208,22 @@ public class LuceneIndexService implements DisposableBean {
     }
 
     private Map<String, Long> readExistingModified(FSDirectory dir) throws IOException {
+        return LuceneReaders.withReader(dir, Map.of(), this::collectModified);
+    }
+
+    private Map<String, Long> collectModified(DirectoryReader reader) throws IOException {
         Map<String, Long> map = new HashMap<>();
-        if (!DirectoryReader.indexExists(dir)) {
-            return map;
-        }
-        try (DirectoryReader reader = DirectoryReader.open(dir)) {
-            StoredFields storedFields = reader.storedFields();
-            Bits liveDocs = MultiBits.getLiveDocs(reader);
-            for (int i = 0; i < reader.maxDoc(); i++) {
-                if (liveDocs != null && !liveDocs.get(i)) {
-                    continue;
-                }
-                Document doc = storedFields.document(i);
-                String path = doc.get(LuceneFields.PATH);
-                IndexableField modified = doc.getField(LuceneFields.MODIFIED);
-                if (path != null && modified != null && modified.numericValue() != null) {
-                    map.put(path, modified.numericValue().longValue());
-                }
+        StoredFields storedFields = reader.storedFields();
+        Bits liveDocs = MultiBits.getLiveDocs(reader);
+        for (int i = 0; i < reader.maxDoc(); i++) {
+            if (liveDocs != null && !liveDocs.get(i)) {
+                continue;
+            }
+            Document doc = storedFields.document(i);
+            String path = doc.get(LuceneFields.PATH);
+            IndexableField modified = doc.getField(LuceneFields.MODIFIED);
+            if (path != null && modified != null && modified.numericValue() != null) {
+                map.put(path, modified.numericValue().longValue());
             }
         }
         return map;
@@ -231,12 +231,7 @@ public class LuceneIndexService implements DisposableBean {
 
     private int docCount() {
         try (FSDirectory dir = FSDirectory.open(appPaths.indexDir())) {
-            if (!DirectoryReader.indexExists(dir)) {
-                return 0;
-            }
-            try (DirectoryReader reader = DirectoryReader.open(dir)) {
-                return reader.numDocs();
-            }
+            return LuceneReaders.withReader(dir, 0, DirectoryReader::numDocs);
         } catch (IOException e) {
             return 0;
         }
