@@ -199,7 +199,7 @@ public class LuceneIndexService implements DisposableBean {
         doc.add(new StringField(LuceneFields.PATH, path, Field.Store.YES));
         doc.add(new TextField(LuceneFields.NAME, fileName, Field.Store.YES));
         doc.add(new TextField(LuceneFields.CONTENT, content, Field.Store.YES));
-        doc.add(new StringField(LuceneFields.EXTENSION, FileUtils.getFileExtensions(fileName), Field.Store.YES));
+        doc.add(new StringField(LuceneFields.EXTENSION, FileUtils.getFileExtension(fileName), Field.Store.YES));
         doc.add(new StoredField(LuceneFields.PARENT, parent == null ? "" : parent.toString()));
         doc.add(new StoredField(LuceneFields.SIZE, size));
         doc.add(new StoredField(LuceneFields.MODIFIED, modified));

@@ -31,7 +31,7 @@ public class DocFileSupport {
             return false;
         }
         // 拡張子なしの場合は空文字が返り、集合に含まれないため false になる。
-        String ext = FileUtils.getFileExtensions(name.toString());
+        String ext = FileUtils.getFileExtension(name.toString());
         return supportedExtensions.contains(ext);
     }
 }
