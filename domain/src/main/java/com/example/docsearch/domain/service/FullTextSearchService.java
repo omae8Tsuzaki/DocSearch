@@ -10,8 +10,8 @@ import com.example.docsearch.core.util.StringUtils;
 import com.example.docsearch.domain.AppPaths;
 import com.example.docsearch.domain.DomainConfig;
 import com.example.docsearch.domain.LuceneFields;
+import com.example.docsearch.domain.LuceneReaders;
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.ja.JapaneseAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexableField;
@@ -51,11 +51,12 @@ public class FullTextSearchService {
     private final AppPaths appPaths;
     // １回の検索で返す最大件数（設定値）
     private final int maxLimit;
-    private final Analyzer analyzer = new JapaneseAnalyzer();
+    private final Analyzer analyzer;
 
-    public FullTextSearchService(AppPaths appPaths, DomainConfig domainConfig) {
+    public FullTextSearchService(AppPaths appPaths, DomainConfig domainConfig, Analyzer analyzer) {
         this.appPaths = appPaths;
         this.maxLimit = domainConfig.getSearchMaxLimit();
+        this.analyzer = analyzer;
     }
 
     /**
@@ -76,34 +77,35 @@ public class FullTextSearchService {
      * @return ヒット一覧（スコア降順）
      */
     public List<SearchHit> search(String query, int limit) {
-        List<SearchHit> hits = new ArrayList<>();
         if (query == null || query.isBlank()) {
-            return hits;
+            return List.of();
         }
-        try (FSDirectory dir = FSDirectory.open(appPaths.indexDir())) {
-            if (!DirectoryReader.indexExists(dir)) {
-                return hits; // 未索引
-            }
-            try (DirectoryReader reader = DirectoryReader.open(dir)) {
-                IndexSearcher searcher = new IndexSearcher(reader);
-                Query parsed = buildQuery(query.strip());
-
-                TopDocs top = searcher.search(parsed, limit);
-                StoredFields storedFields = searcher.storedFields();
-
-                QueryScorer scorer = new QueryScorer(parsed, LuceneFields.CONTENT);
-                Highlighter highlighter = new Highlighter(new SimpleHTMLFormatter(HL_PRE, HL_POST), scorer);
-                highlighter.setTextFragmenter(new SimpleSpanFragmenter(scorer, SNIPPET_LENGTH));
-
-                for (ScoreDoc scoreDoc : top.scoreDocs) {
-                    Document doc = storedFields.document(scoreDoc.doc);
-                    hits.add(toHit(doc, scoreDoc.score, highlighter));
-                }
+        try {
+            Query parsed = buildQuery(query.strip());
+            try (FSDirectory dir = FSDirectory.open(appPaths.indexDir())) {
+                return LuceneReaders.withReader(dir, List.<SearchHit>of(),
+                        reader -> collectHits(reader, parsed, limit));
             }
         } catch (IOException e) {
             throw new IllegalStateException("検索に失敗しました", e);
         } catch (ParseException e) {
-            throw new IllegalArgumentException("検索語の解析に失敗しました: " + query, e);
+            throw new IllegalStateException("検索語の解析に失敗しました: " + query, e);
+        }
+    }
+
+    private List<SearchHit> collectHits(DirectoryReader reader, Query parsed, int limit) throws IOException {
+        List<SearchHit> hits = new ArrayList<>();
+        IndexSearcher searcher = new IndexSearcher(reader);
+        TopDocs top = searcher.search(parsed, limit);
+        StoredFields storedFields = searcher.storedFields();
+
+        QueryScorer scorer = new QueryScorer(parsed, LuceneFields.CONTENT);
+        Highlighter highlighter = new Highlighter(new SimpleHTMLFormatter(HL_PRE, HL_POST), scorer);
+        highlighter.setTextFragmenter(new SimpleSpanFragmenter(scorer, SNIPPET_LENGTH));
+
+        for (ScoreDoc scoreDoc : top.scoreDocs) {
+            Document doc = storedFields.document(scoreDoc.doc);
+            hits.add(toHit(doc, scoreDoc.score, highlighter));
         }
         return hits;
     }
