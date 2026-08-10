@@ -29,8 +29,13 @@ dependencies {
 
     // Spring Boot
     implementation(libs.spring.boot.starter.web)
+    implementation(libs.spring.boot.starter.thymeleaf)
 
     testImplementation(libs.spring.boot.starter.test)
+    // domain の Lucene 依存は implementation のため伝播しない。
+    // テストで JapaneseAnalyzer / Analyzer を直接組み立てるために追加する。
+    testImplementation(libs.lucene.core)
+    testImplementation(libs.lucene.analysis.kuromoji)
 }
 
 tasks.test {

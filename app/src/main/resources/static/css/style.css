@@ -31,6 +31,7 @@ button.primary:hover { filter: brightness(1.05); }
 }
 .index-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .hint { color: var(--muted); font-size: 0.85rem; margin: 8px 0 0; }
+.hint.error { color: #dc2626; }
 .badge { display:inline-block; background:#eef2ff; color:#3730a3; border-radius: 10px; padding: 1px 8px; font-size: 0.8rem; }
 .dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:#9ca3af; margin-right:6px; }
 .dot.busy { background:#f59e0b; animation: pulse 1s infinite; }
@@ -62,3 +63,4 @@ button.primary:hover { filter: brightness(1.05); }
 .dir-list li { padding: 8px 6px; border-radius: 6px; cursor: pointer; }
 .dir-list li:hover { background: var(--bg); }
 .empty { color: var(--muted); padding: 12px 6px; }
+.modal-controls { display: flex; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }

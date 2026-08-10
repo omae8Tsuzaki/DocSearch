@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head><title>health fragment</title></head>
+<body>
+<!-- #healthStatus の中身のみを差し替える（要素自体は index.html 側で固定・常設） -->
+<th:block th:fragment="badge">
+    <span class="dot ready"></span><span>起動中（DocSearch）</span>
+</th:block>
+</body>
+</html>

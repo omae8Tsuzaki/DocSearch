@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head><title>search-results fragment</title></head>
+<body>
+<!-- #searchResults の中身のみを差し替える（要素自体は index.html 側で固定・常設） -->
+<th:block th:fragment="results">
+    <p id="searchStatus" class="hint">
+        <th:block th:if="${blank}">検索語を入力してください。</th:block>
+        <th:block th:unless="${blank}">
+            <span class="badge"
+                  th:text="${total} + ' 件ヒット' + (${total >= limit} ? ('（上限 ' + ${limit} + ' 件で打ち切り）') : '')"></span>
+            <th:block th:if="${total == 0}"> — 該当なし（索引が空の場合は先に再索引してください）</th:block>
+        </th:block>
+    </p>
+    <ul class="results">
+        <li th:each="h : ${hits}">
+            <div class="name" th:text="${h.fileName()}"></div>
+            <!-- サーバ側でエスケープ済み（<mark> のみを許可）のため unescaped で出力する -->
+            <div class="snippet" th:utext="${h.snippet()}"></div>
+            <div class="meta"
+                 th:text="${h.parentPath()} + ' ・ ' + ${h.sizeText()} + ' ・ ' + ${h.dateText()}"></div>
+        </li>
+    </ul>
+</th:block>
+</body>
+</html>

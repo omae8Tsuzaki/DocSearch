@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head><title>browse fragment</title></head>
+<body>
+<!--
+    #browseModalBody の中身のみを差し替える（要素自体は index.html 側で固定・常設）。
+    現在位置に応じて「上へ」「このフォルダを追加」の活性状態・遷移先が変わるため、
+    それらのボタンもこのフラグメントに含めて毎回作り直す。
+-->
+<th:block th:fragment="entries">
+    <div id="modalCurrent" class="current"
+         th:text="${#strings.isEmpty(current)} ? 'ドライブを選択してください' : ${current}"></div>
+    <ul class="dir-list">
+        <li th:if="${entries.isEmpty()}" class="empty">（サブフォルダはありません）</li>
+        <li th:each="entry : ${entries}" th:text="'📁 ' + ${entry.name()}"
+            th:attr="hx-get=@{/browse(path=${entry.path()})}"
+            hx-target="#browseModalBody" hx-swap="innerHTML"></li>
+    </ul>
+    <div class="modal-controls">
+        <button type="button" id="upBtn" th:disabled="${#strings.isEmpty(current)}"
+                th:attr="hx-get=@{/browse(path=${parent})}"
+                hx-target="#browseModalBody" hx-swap="innerHTML">↑ 上へ</button>
+        <button type="button" id="selectBtn" class="primary" th:disabled="${#strings.isEmpty(current)}"
+                th:attr="hx-post=@{/folders(path=${current})}"
+                hx-target="#folderSection" hx-swap="innerHTML"
+                hx-on::after-request="document.getElementById('overlay').classList.remove('open')">このフォルダを追加</button>
+    </div>
+</th:block>
+</body>
+</html>

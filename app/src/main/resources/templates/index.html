@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DocSearch</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="/js/vendor/htmx.min.js"></script>
+    <script>
+        // htmx はデフォルトでは 4xx/5xx レスポンスをスワップしない。
+        // WebExceptionHandler が返すエラーバナーを hx-target にそのまま表示したいため、
+        // 4xx/5xx でもスワップを許可する（アプリ用の独自ロジックは持たせない、設定の上書きのみ）。
+        htmx.config.responseHandling = [
+            {code: "204", swap: false},
+            {code: "[23]..", swap: true},
+            {code: "[45]..", swap: true, error: false}
+        ];
+    </script>
+</head>
+<body>
+    <div class="app-header">
+        <h1>DocSearch</h1>
+        <span id="healthStatus" class="health up" title="アプリの稼働状態"
+              hx-get="/health-fragment" hx-trigger="load, every 10s" hx-target="this" hx-swap="innerHTML">
+            <span class="dot ready"></span><span>起動中（DocSearch）</span>
+        </span>
+    </div>
+    <p class="muted">ローカルPCのフォルダを横断して全文検索します（md / pptx / xlsx / docx / pdf など）。</p>
+
+    <section>
+        <h2>検索対象フォルダ</h2>
+        <div id="folderSection">
+            <th:block th:replace="~{fragments/folders :: section}"></th:block>
+        </div>
+        <button id="addFolderBtn" type="button"
+                onclick="document.getElementById('overlay').classList.add('open')"
+                hx-get="/browse" hx-target="#browseModalBody" hx-swap="innerHTML">+ フォルダを追加</button>
+    </section>
+
+    <section>
+        <h2>索引（インデックス）</h2>
+        <div id="indexStatus" class="index-bar"
+             hx-get="/index/status-fragment" hx-trigger="load, every 2s" hx-target="this" hx-swap="innerHTML"
+             hx-include="#extFilter">
+            <th:block th:replace="~{fragments/index-status :: statusInner}"></th:block>
+        </div>
+        <p class="hint">フォルダを追加・変更したら再索引してください。更新のないファイルはスキップされます。</p>
+    </section>
+
+    <section>
+        <h2>検索</h2>
+        <form class="row search-row" hx-get="/search" hx-target="#searchResults" hx-swap="innerHTML"
+              hx-trigger="submit, change from:#extFilter">
+            <input id="searchInput" name="q" type="text"
+                   placeholder="キーワードを入力（本文・ファイル名を検索）" autocomplete="off">
+            <select id="extFilter" name="ext" title="拡張子で絞り込み">
+                <th:block th:replace="~{fragments/index-status :: extOptions}"></th:block>
+            </select>
+            <button id="searchBtn" class="primary" type="submit">検索</button>
+        </form>
+        <div id="searchResults">
+            <th:block th:replace="~{fragments/search-results :: results}"></th:block>
+        </div>
+    </section>
+
+    <!-- ディレクトリブラウザ -->
+    <div id="overlay" class="overlay">
+        <div class="modal">
+            <header>
+                <strong>フォルダを選択</strong>
+            </header>
+            <div class="body">
+                <div id="browseModalBody"></div>
+            </div>
+            <footer>
+                <span style="flex:1"></span>
+                <button id="cancelBtn" type="button"
+                        onclick="document.getElementById('overlay').classList.remove('open')">キャンセル</button>
+            </footer>
+        </div>
+    </div>
+</body>
+</html>

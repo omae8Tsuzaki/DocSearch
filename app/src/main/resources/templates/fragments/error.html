@@ -1,0 +1,8 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head><title>error fragment</title></head>
+<body>
+<!-- WebExceptionHandler が返す汎用エラー表示。差し込み先は例外発生元の hx-target 次第で変わる -->
+<p th:fragment="banner" class="hint error" th:text="${message}"></p>
+</body>
+</html>

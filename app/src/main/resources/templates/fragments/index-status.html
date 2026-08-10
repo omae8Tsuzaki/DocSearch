@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head><title>index-status fragment</title></head>
+<body>
+
+<!-- #indexStatus の中身のみを差し替える（要素自体は index.html 側で固定・常設） -->
+<th:block th:fragment="statusInner">
+    <div class="muted">
+        <span th:class="${status.indexing()} ? 'dot busy' : 'dot ready'"></span>
+        <th:block th:if="${status.indexing()}"
+                   th:text="'索引作成中…（' + ${status.docCount()} + ' 件）'"></th:block>
+        <th:block th:unless="${status.indexing()}"
+                   th:text="'索引済み ' + ${status.docCount()} + ' 件 ・ ' + ${lastIndexedText}"></th:block>
+    </div>
+    <button type="button" id="reindexBtn" class="primary" th:disabled="${status.indexing()}"
+            hx-post="/index/reindex" hx-target="#indexStatus" hx-swap="innerHTML">再索引</button>
+    <p th:if="${reindexError != null}" class="hint error" th:text="${reindexError}"></p>
+</th:block>
+
+<!-- #extFilter の <option> 一覧のみを差し替えるための素材。select 要素自体はページ内で再利用するテンプレートから直接埋め込む -->
+<th:block th:fragment="extOptions">
+    <option value="">すべての拡張子</option>
+    <option th:each="ext : ${extensions}" th:value="${ext}" th:text="'.' + ${ext}"
+            th:selected="${ext == selectedExt}"></option>
+</th:block>
+
+<!--
+    索引状態ポーリング（/index/status-fragment）と再索引（/index/reindex）の両方が返す本体。
+    #indexStatus への通常スワップに加え、#extFilter の中身だけを out-of-band swap で更新する
+    （select要素自体は差し替えず中身の <option> だけを入れ替えるため、hx-swap-oob の
+    "innerHTML:セレクタ" 記法を使い、外側からの change イベント購読が途切れないようにする）。
+-->
+<th:block th:fragment="pollResponse">
+    <th:block th:replace="~{fragments/index-status :: statusInner}"></th:block>
+    <div hx-swap-oob="innerHTML:#extFilter">
+        <th:block th:replace="~{fragments/index-status :: extOptions}"></th:block>
+    </div>
+</th:block>
+
+</body>
+</html>

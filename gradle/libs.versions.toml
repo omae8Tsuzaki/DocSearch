@@ -14,9 +14,10 @@ spotbugs-plugin-version = "6.5.8"
 
 [libraries]
 # Spring Boot
-spring-boot-starter-web      = { group = "org.springframework.boot", name = "spring-boot-starter-web",      version.ref = "spring-boot-version" }
-spring-boot-starter-test     = { group = "org.springframework.boot", name = "spring-boot-starter-test",     version.ref = "spring-boot-version" }
-spring-boot-dependencies     = { group = "org.springframework.boot", name = "spring-boot-dependencies",     version.ref = "spring-boot-version" }
+spring-boot-starter-web       = { group = "org.springframework.boot", name = "spring-boot-starter-web",       version.ref = "spring-boot-version" }
+spring-boot-starter-thymeleaf = { group = "org.springframework.boot", name = "spring-boot-starter-thymeleaf", version.ref = "spring-boot-version" }
+spring-boot-starter-test      = { group = "org.springframework.boot", name = "spring-boot-starter-test",      version.ref = "spring-boot-version" }
+spring-boot-dependencies      = { group = "org.springframework.boot", name = "spring-boot-dependencies",      version.ref = "spring-boot-version" }
 
 # Spring（domain 用。バージョンは spring-boot-dependencies BOM で管理）
 spring-context = { group = "org.springframework", name = "spring-context" }

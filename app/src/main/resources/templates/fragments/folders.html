@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head><title>folders fragment</title></head>
+<body>
+<!--
+    #folderSection の中身のみを差し替える（要素自体は index.html 側で固定・常設）。
+    「対象フォルダなし」の案内はここで判定するため、専用の hidden 切り替えは不要。
+-->
+<th:block th:fragment="section">
+    <ul class="folder-list">
+        <li th:each="path : ${folders}">
+            <code th:text="${path}"></code>
+            <button type="button" th:attr="hx-delete=@{/folders(path=${path})}"
+                    hx-target="#folderSection" hx-swap="innerHTML">削除</button>
+        </li>
+    </ul>
+    <p th:if="${folders.isEmpty()}" class="hint">まだ対象フォルダがありません。「フォルダを追加」から選択してください。</p>
+</th:block>
+</body>
+</html>

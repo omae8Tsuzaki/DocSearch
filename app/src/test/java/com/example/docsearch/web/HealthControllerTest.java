@@ -1,24 +1,32 @@
 package com.example.docsearch.web;
 
-import org.junit.jupiter.api.Test;
-
 import java.util.Map;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * <p>{@link HealthController} の単体テスト。</p>
+ * <p>{@link HealthController} のテストクラス。</p>
+ *
+ * <p>以下の観点でテストを行う。</p>
+ *
+ * <ul>
+ *     <li>{@link #healthSuccess01} 正常系：疎通確認用 JSON API がステータスとアプリ名を返却することを確認する。</li>
+ *     <li>{@link #healthFragmentSuccess01} 正常系：稼働状態バッジのフラグメント名が返却されることを確認する。</li>
+ * </ul>
  */
 public class HealthControllerTest {
 
-    HealthController controller = new HealthController();
+    private final HealthController controller = new HealthController();
 
-    /**
-     * <p>health メソッドの正常系テスト。</p>
-     *
-     * @throws Exception 想定外の例外が発生した場合
-     */
     @Test
+    @DisplayName("""
+        正常系
+        対象メソッド：[health]
+        テスト観点：疎通確認用 JSON API がステータスとアプリ名を返却することを確認する。
+        """)
     public void healthSuccess01() throws Exception {
 
         //
@@ -29,7 +37,25 @@ public class HealthControllerTest {
         //
         // 検証
         //
-        assertEquals("UP", result.get("status"));
-        assertEquals("DocSearch", result.get("app"));
+        assertEquals(Map.of("status", "UP", "app", "DocSearch"), result);
+    }
+
+    @Test
+    @DisplayName("""
+        正常系
+        対象メソッド：[healthFragment]
+        テスト観点：稼働状態バッジのフラグメント名が返却されることを確認する。
+        """)
+    public void healthFragmentSuccess01() throws Exception {
+
+        //
+        // 実行
+        //
+        String result = controller.healthFragment();
+
+        //
+        // 検証
+        //
+        assertEquals("fragments/health :: badge", result);
     }
 }
