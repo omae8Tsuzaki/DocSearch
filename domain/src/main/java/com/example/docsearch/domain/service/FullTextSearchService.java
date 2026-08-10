@@ -2,7 +2,9 @@ package com.example.docsearch.domain.service;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import com.example.docsearch.core.exception.ApplicationException;
@@ -17,19 +19,27 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexableField;
+import org.apache.lucene.index.MultiTerms;
 import org.apache.lucene.index.StoredFields;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.index.Terms;
+import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.search.BooleanClause;
+import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.highlight.Highlighter;
 import org.apache.lucene.search.highlight.QueryScorer;
 import org.apache.lucene.search.highlight.SimpleHTMLFormatter;
 import org.apache.lucene.search.highlight.SimpleSpanFragmenter;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.util.BytesRef;
 import org.springframework.stereotype.Service;
 
 import com.example.docsearch.domain.model.SearchHit;
@@ -68,7 +78,7 @@ public class FullTextSearchService {
      * @return ヒット一覧（スコア降順）
      */
     public List<SearchHit> search(String query) {
-        return search(query, this.maxLimit);
+        return search(query, this.maxLimit, "");
     }
 
     /**
@@ -79,11 +89,23 @@ public class FullTextSearchService {
      * @return ヒット一覧（スコア降順）
      */
     public List<SearchHit> search(String query, int limit) {
+        return search(query, limit, "");
+    }
+
+    /**
+     * <p>上限件数と拡張子絞り込みを指定して全文検索する。</p>
+     *
+     * @param query     検索語
+     * @param limit     返す最大件数
+     * @param extension 絞り込む拡張子（小文字・ドットなし）。{@code null} または空文字なら絞り込まない
+     * @return ヒット一覧（スコア降順）
+     */
+    public List<SearchHit> search(String query, int limit, String extension) {
         if (query == null || query.isBlank()) {
             return List.of();
         }
         try {
-            Query parsed = buildQuery(query.strip());
+            Query parsed = buildQuery(query.strip(), extension);
             try (FSDirectory dir = FSDirectory.open(appPaths.indexDir())) {
                 return LuceneReaders.withReader(dir, List.<SearchHit>of(),
                         reader -> collectHits(reader, parsed, limit));
@@ -93,6 +115,37 @@ public class FullTextSearchService {
         } catch (ParseException e) {
             throw new ApplicationException("検索語の解析に失敗しました: " + query, e);
         }
+    }
+
+    /**
+     * <p>索引済みファイルに存在する拡張子の一覧を返す（絞り込み UI 用）。</p>
+     *
+     * @return 拡張子の一覧（小文字・ドットなし、昇順）
+     */
+    public List<String> listExtensions() {
+        try (FSDirectory dir = FSDirectory.open(appPaths.indexDir())) {
+            return LuceneReaders.withReader(dir, List.<String>of(), this::collectExtensions);
+        } catch (IOException e) {
+            throw new ServiceException("拡張子一覧の取得に失敗しました", e);
+        }
+    }
+
+    private List<String> collectExtensions(DirectoryReader reader) throws IOException {
+        Terms terms = MultiTerms.getTerms(reader, LuceneFields.EXTENSION);
+        if (terms == null) {
+            return List.of();
+        }
+        List<String> extensions = new ArrayList<>();
+        TermsEnum termsEnum = terms.iterator();
+        BytesRef term;
+        while ((term = termsEnum.next()) != null) {
+            String ext = term.utf8ToString();
+            if (!ext.isEmpty()) {
+                extensions.add(ext);
+            }
+        }
+        Collections.sort(extensions);
+        return extensions;
     }
 
     private List<SearchHit> collectHits(DirectoryReader reader, Query parsed, int limit) throws IOException {
@@ -122,13 +175,15 @@ public class FullTextSearchService {
     }
 
     /**
-     * <p>検索クエリを構築する。</p>
+     * <p>検索クエリを構築する。拡張子が指定されていれば、スコアに影響しないフィルタとして
+     * 絞り込み条件に加える。</p>
      *
-     * @param rawQuery 元の検索クエリ
+     * @param rawQuery  元の検索クエリ
+     * @param extension 絞り込む拡張子（小文字・ドットなし）。{@code null} または空文字なら絞り込まない
      * @return 構築されたクエリ
      * @throws ParseException クエリ解析に失敗した場合
      */
-    private Query buildQuery(String rawQuery) throws ParseException {
+    private Query buildQuery(String rawQuery, String extension) throws ParseException {
         String[] fields = {LuceneFields.CONTENT, LuceneFields.NAME};
         Map<String, Float> boosts = Map.of(
                 LuceneFields.CONTENT, 1.0f,
@@ -137,7 +192,15 @@ public class FullTextSearchService {
         MultiFieldQueryParser parser = new MultiFieldQueryParser(fields, analyzer, boosts);
         parser.setDefaultOperator(QueryParser.Operator.AND);
         // ユーザー入力は記号をエスケープし、プレーンな語として扱う
-        return parser.parse(QueryParser.escape(rawQuery));
+        Query textQuery = parser.parse(QueryParser.escape(rawQuery));
+        if (extension == null || extension.isBlank()) {
+            return textQuery;
+        }
+        Term extensionTerm = new Term(LuceneFields.EXTENSION, extension.strip().toLowerCase(Locale.ROOT));
+        return new BooleanQuery.Builder()
+                .add(textQuery, BooleanClause.Occur.MUST)
+                .add(new TermQuery(extensionTerm), BooleanClause.Occur.FILTER)
+                .build();
     }
 
     private SearchHit toHit(Document doc, float score, Highlighter highlighter) {

@@ -63,18 +63,53 @@ function stopHealthPolling() {
 }
 
 // ---- 索引状態 ----
+let wasIndexing = false;
 async function loadStatus() {
     try {
         const s = await (await fetch("/api/index/status")).json();
         renderStatus(s);
         if (s.indexing) {
+            wasIndexing = true;
             if (!statusTimer) statusTimer = setInterval(loadStatus, 1500);
             $("reindexBtn").disabled = true;
         } else {
             if (statusTimer) { clearInterval(statusTimer); statusTimer = null; }
             $("reindexBtn").disabled = false;
+            if (wasIndexing) {
+                // 索引が完了したタイミングで拡張子の絞り込み候補を更新する。
+                wasIndexing = false;
+                loadExtensions();
+            }
         }
     } catch { /* ignore */ }
+}
+
+// ---- 拡張子フィルタ ----
+// 初回ロードと再索引完了時の両方から呼ばれるため、後発のリクエストより古いレスポンスが
+// 遅れて返ってきても上書きしないよう、リクエストIDで最新のものだけを反映する。
+let extensionsRequestId = 0;
+async function loadExtensions() {
+    const requestId = ++extensionsRequestId;
+    try {
+        const data = await (await fetch("/api/search/extensions")).json();
+        if (requestId !== extensionsRequestId) return; // 後から呼ばれたリクエストが既に完了済み → 古い結果は破棄
+        const select = $("extFilter");
+        const current = select.value;
+        select.innerHTML = "";
+        const allOpt = document.createElement("option");
+        allOpt.value = "";
+        allOpt.textContent = "すべての拡張子";
+        select.appendChild(allOpt);
+        (data.extensions || []).forEach((ext) => {
+            const opt = document.createElement("option");
+            opt.value = ext;
+            opt.textContent = "." + ext;
+            select.appendChild(opt);
+        });
+        if ([...select.options].some((o) => o.value === current)) {
+            select.value = current;
+        }
+    } catch { /* 拡張子一覧が取得できなくても検索自体は可能 */ }
 }
 function renderStatus(s) {
     const el = $("indexStatus");
@@ -135,7 +170,11 @@ async function runSearch() {
     const q = $("searchInput").value.trim();
     if (!q) { $("searchStatus").textContent = "検索語を入力してください。"; $("results").innerHTML = ""; return; }
     $("searchStatus").textContent = "検索中…";
-    const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
+    const ext = $("extFilter").value;
+    const url = ext
+        ? `/api/search?q=${encodeURIComponent(q)}&ext=${encodeURIComponent(ext)}`
+        : `/api/search?q=${encodeURIComponent(q)}`;
+    const res = await fetch(url);
     if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         $("searchStatus").textContent = err.error || "検索に失敗しました";
@@ -197,6 +236,7 @@ $("overlay").onclick = (e) => { if (e.target === $("overlay")) closeModal(); };
 $("reindexBtn").onclick = reindex;
 $("searchBtn").onclick = runSearch;
 $("searchInput").addEventListener("keydown", (e) => { if (e.key === "Enter") runSearch(); });
+$("extFilter").addEventListener("change", () => { if ($("searchInput").value.trim()) runSearch(); });
 
 // タブが非表示の間はポーリングを止め、表示に戻ったら即時確認して再開する。
 document.addEventListener("visibilitychange", () => {
@@ -214,3 +254,4 @@ checkHealth();
 startHealthPolling();
 loadFolders();
 loadStatus();
+loadExtensions();

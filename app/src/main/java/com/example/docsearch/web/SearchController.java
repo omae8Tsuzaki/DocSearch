@@ -27,17 +27,29 @@ public class SearchController {
     /**
      * <p>クエリ文字列を受け取り、検索してヒットしたドキュメントのリストを返す。</p>
      *
-     * @param query 検索クエリ
+     * @param query     検索クエリ
+     * @param extension 絞り込む拡張子（省略可、小文字・ドットなし）
      * @return 検索結果
      */
     @GetMapping
-    public Map<String, Object> search(@RequestParam("q") String query) {
-        List<SearchHit> hits = searchService.search(query);
+    public Map<String, Object> search(@RequestParam("q") String query,
+                                       @RequestParam(value = "ext", required = false) String extension) {
+        List<SearchHit> hits = searchService.search(query, searchService.getMaxLimit(), extension);
         return Map.of(
                 "query", query == null ? "" : query,
                 "total", hits.size(),
                 "limit", searchService.getMaxLimit(),
                 "hits", hits
         );
+    }
+
+    /**
+     * <p>絞り込み UI 用に、索引済みファイルに存在する拡張子の一覧を返す。</p>
+     *
+     * @return 拡張子の一覧（小文字・ドットなし、昇順）
+     */
+    @GetMapping("/extensions")
+    public Map<String, Object> extensions() {
+        return Map.of("extensions", searchService.listExtensions());
     }
 }

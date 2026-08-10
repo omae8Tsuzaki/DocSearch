@@ -26,6 +26,9 @@ button.primary:hover { filter: brightness(1.05); }
 .search-row input[type=text] {
     flex: 1; font: inherit; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px;
 }
+.search-row select {
+    font: inherit; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; background: #fff;
+}
 .index-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .hint { color: var(--muted); font-size: 0.85rem; margin: 8px 0 0; }
 .badge { display:inline-block; background:#eef2ff; color:#3730a3; border-radius: 10px; padding: 1px 8px; font-size: 0.8rem; }
