@@ -1,7 +1,6 @@
 package com.example.docsearch.domain.service;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -17,6 +16,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.example.docsearch.core.exception.ServiceException;
 import com.example.docsearch.core.util.FileUtils;
 import com.example.docsearch.domain.AppPaths;
 import com.example.docsearch.domain.DomainConfig;
@@ -254,7 +254,7 @@ public class LuceneIndexService implements DisposableBean {
         try {
             Files.writeString(appPaths.indexMetaFile(), Long.toString(epochMs), StandardCharsets.UTF_8);
         } catch (IOException e) {
-            throw new UncheckedIOException("索引メタ情報の保存に失敗しました", e);
+            throw new ServiceException("索引メタ情報の保存に失敗しました", e);
         }
     }
 

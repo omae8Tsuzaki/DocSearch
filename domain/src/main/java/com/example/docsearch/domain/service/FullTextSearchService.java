@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.example.docsearch.core.exception.ApplicationException;
+import com.example.docsearch.core.exception.ServiceException;
 import com.example.docsearch.core.util.HtmlEscaper;
 import com.example.docsearch.core.util.StringUtils;
 import com.example.docsearch.domain.AppPaths;
@@ -87,9 +89,9 @@ public class FullTextSearchService {
                         reader -> collectHits(reader, parsed, limit));
             }
         } catch (IOException e) {
-            throw new IllegalStateException("検索に失敗しました", e);
+            throw new ServiceException("検索に失敗しました", e);
         } catch (ParseException e) {
-            throw new IllegalStateException("検索語の解析に失敗しました: " + query, e);
+            throw new ApplicationException("検索語の解析に失敗しました: " + query, e);
         }
     }
 

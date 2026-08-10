@@ -1,10 +1,10 @@
 package com.example.docsearch.domain;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import com.example.docsearch.core.exception.ServiceException;
 import org.springframework.stereotype.Component;
 
 /**
@@ -92,7 +92,7 @@ public final class AppPaths {
         try {
             Files.createDirectories(dir);
         } catch (IOException e) {
-            throw new UncheckedIOException("ディレクトリの作成に失敗しました: " + dir, e);
+            throw new ServiceException("ディレクトリの作成に失敗しました: " + dir, e);
         }
         return dir;
     }

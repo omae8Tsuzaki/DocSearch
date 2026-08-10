@@ -1,7 +1,6 @@
 package com.example.docsearch.domain;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -9,6 +8,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 
+import com.example.docsearch.core.exception.ServiceException;
 import org.springframework.stereotype.Component;
 
 /**
@@ -46,7 +46,7 @@ public class SettingsRepository {
             }
             return result;
         } catch (IOException e) {
-            throw new UncheckedIOException("設定ファイルの読み込みに失敗しました", e);
+            throw new ServiceException("設定ファイルの読み込みに失敗しました", e);
         }
     }
 
@@ -73,7 +73,7 @@ public class SettingsRepository {
         try {
             Files.write(appPaths.settingsFile(), result, StandardCharsets.UTF_8);
         } catch (IOException e) {
-            throw new UncheckedIOException("設定ファイルの保存に失敗しました", e);
+            throw new ServiceException("設定ファイルの保存に失敗しました", e);
         }
         return result;
     }

@@ -2,7 +2,6 @@ package com.example.docsearch.domain;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -11,6 +10,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
+import com.example.docsearch.core.exception.ApplicationException;
+import com.example.docsearch.core.exception.ServiceException;
 import org.springframework.stereotype.Component;
 
 import com.example.docsearch.domain.model.DirectoryEntry;
@@ -43,12 +44,13 @@ public class DirectoryBrowser {
      *
      * @param pathStr 対象ディレクトリの絶対パス
      * @return サブディレクトリの一覧（名前昇順）
-     * @throws IllegalArgumentException ディレクトリでない場合
+     * @throws ApplicationException ディレクトリでない場合
+     * @throws ServiceException ディレクトリ一覧の取得に失敗した場合
      */
     public List<DirectoryEntry> listChildren(String pathStr) {
         Path dir = Path.of(pathStr);
         if (!Files.isDirectory(dir)) {
-            throw new IllegalArgumentException("ディレクトリではありません: " + pathStr);
+            throw new ApplicationException("ディレクトリではありません: " + pathStr);
         }
         List<DirectoryEntry> entries = new ArrayList<>();
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
@@ -65,7 +67,7 @@ public class DirectoryBrowser {
                 }
             }
         } catch (IOException e) {
-            throw new UncheckedIOException("フォルダ一覧の取得に失敗しました: " + pathStr, e);
+            throw new ServiceException("フォルダ一覧の取得に失敗しました: " + pathStr, e);
         }
         entries.sort(Comparator.comparing(entry -> entry.name().toLowerCase(Locale.ROOT)));
         return entries;

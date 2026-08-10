@@ -1,5 +1,5 @@
 plugins {
-    id("java")
+    id("java-library")
     alias(libs.plugins.spotbugs)
 }
 
@@ -21,7 +21,7 @@ repositories {
 }
 
 dependencies {
-    implementation(project(":core"))
+    api(project(":core"))
 
     // Spring（DI/ライフサイクル）。バージョンは Spring Boot BOM で管理
     implementation(platform(libs.spring.boot.dependencies))
